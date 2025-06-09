@@ -70,7 +70,7 @@ exports.createDestination = async (req, res) => {
 // Get all destinations
 exports.getAllDestinations = async (req, res) => {
   try {
-    const destinations = await Destination.find();
+    const destinations = await Destination.find().select('-__v -_id');
     res.status(200).json(destinations);
   } catch (err) {
     console.error(err);

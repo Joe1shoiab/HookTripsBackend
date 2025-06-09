@@ -2,11 +2,18 @@ const Trip = require('../models/Trip');
 
 // Create a new trip
 exports.createTrip = async (req, res) => {
-  const { name, imagePath, itinerary, tripHighlights, description } = req.body;
+  const { name, imagePath, itinerary, tripHighlights, description, destinationId } = req.body;
   
-  if (!name || !imagePath || !itinerary || !description) {
+  if (!name || !imagePath || !itinerary || !description || destinationId === undefined) {
     return res.status(400).json({ 
-      error: "Required fields missing" 
+      error: "Required fields missing. All fields including destinationId are required." 
+    });
+  }
+
+  // Validate that destinationId is a number
+  if (typeof destinationId !== 'number') {
+    return res.status(400).json({
+      error: "destinationId must be a number"
     });
   }
 
@@ -16,7 +23,8 @@ exports.createTrip = async (req, res) => {
       imagePath,
       itinerary,
       tripHighlights,
-      description
+      description,
+      destinationId
     });
     await newTrip.save();
     res.status(200).json({ success: true, msg: "Trip saved successfully" });
@@ -29,7 +37,20 @@ exports.createTrip = async (req, res) => {
 // Get all trips
 exports.getAllTrips = async (req, res) => {
   try {
-    const trips = await Trip.find().sort({ createdAt: -1 });
+    const { destinationId } = req.query;
+    let query = {};
+    
+    // If destinationId is provided, filter trips by that destination
+    if (destinationId) {
+      // Convert destinationId to number since query params are strings
+      const destinationIdNum = parseInt(destinationId);
+      if (isNaN(destinationIdNum)) {
+        return res.status(400).json({ error: "destinationId must be a valid number" });
+      }
+      query.destinationId = destinationIdNum;
+    }
+
+    const trips = await Trip.find(query).sort({ createdAt: -1 });
     res.status(200).json(trips);
   } catch (err) {
     console.error(err);

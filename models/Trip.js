@@ -6,6 +6,7 @@ const TripSchema = new mongoose.Schema({
   itinerary: [{ type: String, required: true }],
   tripHighlights: [{ type: String }],
   description: { type: String, required: true },
+  destinationId: { type: Number, required: true, ref: 'Destination.id' },
   createdAt: { type: Date, default: Date.now }
 });
 
