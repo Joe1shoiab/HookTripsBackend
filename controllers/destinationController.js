@@ -76,4 +76,21 @@ exports.getAllDestinations = async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch destinations" });
   }
+};
+
+// Get simplified destinations for search
+exports.getSimplifiedDestinations = async (req, res) => {
+  try {
+    const destinations = await Destination.find().select('id name images location');
+    const simplifiedDestinations = destinations.map(dest => ({
+      id: dest.id,
+      name: dest.name,
+      image: dest.images[0], // Only return the first image
+      location: dest.location
+    }));
+    res.status(200).json(simplifiedDestinations);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch simplified destinations" });
+  }
 }; 

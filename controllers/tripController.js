@@ -2,11 +2,21 @@ const Trip = require('../models/Trip');
 
 // Create a new trip
 exports.createTrip = async (req, res) => {
-  const { name, imagePath, itinerary, tripHighlights, description, destinationId } = req.body;
+  const { 
+    title,
+    name, 
+    images, 
+    description, 
+    destinationId,
+    price,
+    duration,
+    highlights,
+    itinerary 
+  } = req.body;
   
-  if (!name || !imagePath || !itinerary || !description || destinationId === undefined) {
+  if (!title || !name || !images || !description || !destinationId || !price || !duration || !itinerary) {
     return res.status(400).json({ 
-      error: "Required fields missing. All fields including destinationId are required." 
+      error: "Required fields missing. All fields are required." 
     });
   }
 
@@ -17,17 +27,41 @@ exports.createTrip = async (req, res) => {
     });
   }
 
+  // Validate that images is an array
+  if (!Array.isArray(images)) {
+    return res.status(400).json({
+      error: "Images must be provided as an array"
+    });
+  }
+
+  // Validate that images array is not empty
+  if (images.length === 0) {
+    return res.status(400).json({
+      error: "At least one image is required"
+    });
+  }
+
+  // Validate that all items in images array are strings
+  if (!images.every(image => typeof image === 'string')) {
+    return res.status(400).json({
+      error: "All images must be strings"
+    });
+  }
+
   try {
     const newTrip = new Trip({
+      title,
       name,
-      imagePath,
-      itinerary,
-      tripHighlights,
+      images,
       description,
-      destinationId
+      destinationId,
+      price,
+      duration,
+      highlights,
+      itinerary
     });
     await newTrip.save();
-    res.status(200).json({ success: true, msg: "Trip saved successfully" });
+    res.status(200).json({ success: true, msg: "Trip saved successfully", trip: newTrip });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to save trip" });
